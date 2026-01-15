@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { hasUserContext, saveUserContext } from "@/lib/storage";
 
@@ -6,13 +6,13 @@ const GOOGLE_DRIVE_VIDEO_ID = "1X1ajTMAmXO-xKZXqU1jlgtcK_rybZT4O";
 
 const Context = () => {
   const navigate = useNavigate();
-  const videoRef = useRef<HTMLIFrameElement>(null);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     situation: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   useEffect(() => {
     if (hasUserContext()) {
@@ -52,20 +52,32 @@ const Context = () => {
     }
   };
 
+  // Construct the embed URL with autoplay parameters
+  const videoEmbedUrl = `https://drive.google.com/file/d/${GOOGLE_DRIVE_VIDEO_ID}/preview`;
+
   return (
     <div className="min-h-screen bg-background py-12 px-6">
       <div className="max-w-lg mx-auto space-y-10 animate-fade-in">
         {/* Video Section */}
-        <div className="aspect-[9/16] max-h-[400px] mx-auto w-auto rounded-xl overflow-hidden shadow-video bg-video-card">
+        <div className="aspect-[9/16] max-h-[400px] mx-auto w-auto rounded-xl overflow-hidden shadow-video bg-video-card relative">
+          {!videoLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-video-card">
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
           <iframe
-            ref={videoRef}
-            src={`https://drive.google.com/file/d/${GOOGLE_DRIVE_VIDEO_ID}/preview?autoplay=1`}
+            src={videoEmbedUrl}
             className="w-full h-full"
-            allow="autoplay; encrypted-media"
+            allow="autoplay; encrypted-media; fullscreen"
             allowFullScreen
             title="Introduction Video"
+            onLoad={() => setVideoLoaded(true)}
           />
         </div>
+        
+        <p className="text-center text-xs text-muted-foreground">
+          Click the video to play
+        </p>
 
         {/* Form Section */}
         <div className="space-y-6">
